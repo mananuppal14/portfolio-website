@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<!--
+  index.html — the whole site lives in this one page.
+  Each <section> has an id (#about, #projects, ...) which is what the nav links
+  point at, and what script.js watches to trigger the fade-in animation.
+-->
+<html lang="en">
+<head>
+  <!-- charset must come first: it tells the browser how to decode the bytes of this file -->
+  <meta charset="UTF-8">
+  <!-- viewport: without this, phones pretend to be ~980px wide and zoom out. Required for responsive CSS to work. -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manan Uppal — Portfolio</title>
+  <meta name="description" content="Personal portfolio of Manan Uppal — projects, writing, and contact.">
+
+  <!--
+    Google Fonts. preconnect opens the network connection early so the font
+    request doesn't wait on DNS + TLS. display=swap means text renders in the
+    fallback font immediately instead of being invisible while the font loads.
+    style.css lists real fallbacks, so the page still looks fine offline.
+  -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css">
+  <!-- Emoji favicon via inline SVG — saves shipping an .ico file -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✳️</text></svg>">
+</head>
+<body>
+
+  <!-- =========================================================
+       STICKY NAV
+       position: sticky lives in the CSS. The href="#about" style
+       links are plain anchor links — they'd work with JS disabled;
+       script.js only upgrades them to *smooth* scrolling.
+       ========================================================= -->
+  <header class="site-header">
+    <nav class="nav" aria-label="Main">
+      <a class="nav__brand" href="#about">MU<span class="nav__dot">.</span></a>
+
+      <!-- data-nav-link is a hook for script.js (styling hooks stay as classes,
+           behaviour hooks as data-attributes — keeps the two from tangling) -->
+      <ul class="nav__list">
+        <li><a class="nav__link" data-nav-link href="#about">About</a></li>
+        <li><a class="nav__link" data-nav-link href="#projects">Projects</a></li>
+        <li><a class="nav__link" data-nav-link href="#resume">Resume</a></li>
+        <li><a class="nav__link" data-nav-link href="#article">Writing</a></li>
+        <li><a class="nav__link" data-nav-link href="#contact">Contact</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+
+    <!-- =========================================================
+         1. ABOUT
+         class="reveal" marks a section for the fade-in-on-scroll
+         animation. script.js adds class "is-visible" when it
+         scrolls into view; style.css does the actual animating.
+         ========================================================= -->
+    <section id="about" class="section section--about reveal">
+      <div class="container">
+        <p class="eyebrow">Hello, I'm</p>
+        <h1 class="hero__title">
+          Manan Uppal —<br>
+          <span class="hero__accent">building things for the web.</span>
+        </h1>
+        <p class="hero__bio">
+          Placeholder bio. A sentence or two about who you are, what you like building,
+          and what you're currently working on. Keep it human — this is the first thing
+          anyone reads. Mention the stack you enjoy, the problems you chase, and maybe
+          one non-work thing so you sound like a person.
+        </p>
+
+        <!-- Small "tag" pills — cheap way to add personality + scannable info -->
+        <ul class="tags">
+          <li class="tag">JavaScript</li>
+          <li class="tag">Python</li>
+          <li class="tag">Data</li>
+          <li class="tag">Design</li>
+        </ul>
+
+        <div class="btn-row">
+          <a class="btn btn--primary" href="#projects">See my work</a>
+          <a class="btn btn--ghost" href="#contact">Get in touch</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================================================
+         2. PROJECTS
+         The grid itself is CSS Grid with auto-fit, so the number of
+         columns adapts to the screen without any media query.
+         Each card is an <article> — it's standalone content.
+         ========================================================= -->
+    <section id="projects" class="section reveal">
+      <div class="container">
+        <p class="eyebrow">01 — Work</p>
+        <h2 class="section__title">Projects</h2>
+        <p class="section__lede">
+          A few things I've built. Replace these placeholders with real write-ups,
+          screenshots (drop them in <code>/assets</code>), and live links.
+        </p>
+
+        <div class="grid">
+
+          <!-- Card 1 -->
+          <article class="card">
+            <!-- The "thumb" is a CSS gradient, not an image file, so nothing
+                 appears broken before you add real screenshots. Swap it for
+                 <img src="assets/project-one.png" alt="..."> when you have one. -->
+            <div class="card__thumb card__thumb--a" aria-hidden="true"></div>
+            <div class="card__body">
+              <h3 class="card__title">Project One</h3>
+              <p class="card__text">
+                Placeholder description. What problem it solved, what you built,
+                and one interesting technical detail worth bragging about.
+              </p>
+              <ul class="tags tags--sm">
+                <li class="tag">HTML</li>
+                <li class="tag">CSS</li>
+                <li class="tag">JS</li>
+              </ul>
+              <div class="card__links">
+                <a class="link-arrow" href="#">Live demo</a>
+                <a class="link-arrow" href="#">Source</a>
+              </div>
+            </div>
+          </article>
+
+          <!-- Card 2 -->
+          <article class="card">
+            <div class="card__thumb card__thumb--b" aria-hidden="true"></div>
+            <div class="card__body">
+              <h3 class="card__title">Project Two</h3>
+              <p class="card__text">
+                Placeholder description. Two or three lines is plenty — the goal
+                is to make someone curious enough to click through.
+              </p>
+              <ul class="tags tags--sm">
+                <li class="tag">Python</li>
+                <li class="tag">API</li>
+              </ul>
+              <div class="card__links">
+                <a class="link-arrow" href="#">Live demo</a>
+                <a class="link-arrow" href="#">Source</a>
+              </div>
+            </div>
+          </article>
+
+          <!-- Card 3 -->
+          <article class="card">
+            <div class="card__thumb card__thumb--c" aria-hidden="true"></div>
+            <div class="card__body">
+              <h3 class="card__title">Project Three</h3>
+              <p class="card__text">
+                Placeholder description. If a project is unfinished, say so —
+                "in progress" reads as momentum, not as a gap.
+              </p>
+              <ul class="tags tags--sm">
+                <li class="tag">SQL</li>
+                <li class="tag">Charts</li>
+              </ul>
+              <div class="card__links">
+                <a class="link-arrow" href="#">Live demo</a>
+                <a class="link-arrow" href="#">Source</a>
+              </div>
+            </div>
+          </article>
+
+          <!-- Card 4 -->
+          <article class="card">
+            <div class="card__thumb card__thumb--d" aria-hidden="true"></div>
+            <div class="card__body">
+              <h3 class="card__title">Project Four</h3>
+              <p class="card__text">
+                Placeholder description. Copy this whole &lt;article&gt; block to
+                add another card — the grid handles the layout for you.
+              </p>
+              <ul class="tags tags--sm">
+                <li class="tag">Side project</li>
+              </ul>
+              <div class="card__links">
+                <a class="link-arrow" href="#">Live demo</a>
+                <a class="link-arrow" href="#">Source</a>
+              </div>
+            </div>
+          </article>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================================================
+         3. RESUME
+         Two links styled as buttons:
+           - "View"     → target="_blank" opens the PDF in a new tab
+           - "Download" → the `download` attribute tells the browser to
+                          save the file instead of navigating to it, and
+                          its value is the suggested filename.
+         rel="noopener" on target="_blank" links is a security habit:
+         it stops the opened page from touching window.opener.
+         ========================================================= -->
+    <section id="resume" class="section reveal">
+      <div class="container">
+        <div class="panel">
+          <div class="panel__text">
+            <p class="eyebrow">02 — Resume</p>
+            <h2 class="section__title">The one-page version</h2>
+            <p class="section__lede">
+              Experience, education, and the tools I actually use.
+              Replace <code>assets/resume.pdf</code> with your real file — the
+              buttons below already point at it.
+            </p>
+          </div>
+          <div class="btn-row">
+            <a class="btn btn--primary" href="assets/resume.pdf" target="_blank" rel="noopener">
+              View Resume
+            </a>
+            <a class="btn btn--ghost" href="assets/resume.pdf" download="Manan-Uppal-Resume.pdf">
+              Download Resume
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================================================
+         4. LATEST ARTICLE
+         One big card that is itself a link (an <a> wrapping block
+         content is valid HTML5, as long as it contains no other
+         interactive elements).
+         ========================================================= -->
+    <section id="article" class="section reveal">
+      <div class="container">
+        <p class="eyebrow">03 — Writing</p>
+        <h2 class="section__title">Latest article</h2>
+
+        <a class="article-card" href="https://medium.com/@your-handle" target="_blank" rel="noopener">
+          <div class="article-card__meta">
+            <span class="badge">Medium</span>
+            <span class="article-card__date">Placeholder date · 6 min read</span>
+          </div>
+          <h3 class="article-card__title">
+            The title of your most recent post goes right here
+          </h3>
+          <p class="article-card__excerpt">
+            A one or two line hook from the article. Swap the href above for your
+            real Medium profile or post URL.
+          </p>
+          <!-- aria-hidden on the arrow: it's decoration, the link text already says where this goes -->
+          <span class="article-card__cta">Read on Medium <span aria-hidden="true">→</span></span>
+        </a>
+      </div>
+    </section>
+
+    <!-- =========================================================
+         5. CONTACT
+         mailto: opens the visitor's mail client. All links here are
+         placeholders — swap the hrefs for your real profiles.
+         ========================================================= -->
+    <section id="contact" class="section reveal">
+      <div class="container container--narrow">
+        <p class="eyebrow">04 — Contact</p>
+        <h2 class="section__title">Let's talk</h2>
+        <p class="section__lede">
+          Open to interesting problems, collaborations, and coffee-shaped conversations.
+        </p>
+
+        <a class="email-link" href="mailto:you@example.com">you@example.com</a>
+
+        <ul class="socials">
+          <li><a class="social" href="#" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a class="social" href="#" target="_blank" rel="noopener">LinkedIn</a></li>
+          <li><a class="social" href="#" target="_blank" rel="noopener">Medium</a></li>
+          <li><a class="social" href="#" target="_blank" rel="noopener">X / Twitter</a></li>
+        </ul>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <p>© <span data-year>2026</span> Manan Uppal · Built with plain HTML, CSS &amp; JS.</p>
+    </div>
+  </footer>
+
+  <!--
+    The script tag sits at the end of <body> so the DOM elements it queries
+    already exist by the time it runs. (`defer` in the <head> would work too.)
+  -->
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,639 @@
+/* ============================================================
+   style.css
+   Roughly top-to-bottom: design tokens → reset → layout helpers
+   → reusable bits (buttons, tags) → each section → animation
+   → responsive tweaks.
+   ============================================================ */
+
+
+/* ------------------------------------------------------------
+   1. DESIGN TOKENS (CSS custom properties)
+   Defining colours/spacing once on :root means you change the
+   whole site's palette by editing four lines. Use them as
+   var(--ink), var(--accent), etc.
+   Palette: warm off-white paper, coral + violet accents, with a
+   lime highlight. Deliberately not corporate blue.
+   ------------------------------------------------------------ */
+:root {
+  --paper:        #fffaf3;   /* page background — warm, not pure white */
+  --paper-2:      #ffffff;   /* raised surfaces: cards, panels */
+  --ink:          #1b1a22;   /* primary text — near-black with a hint of purple */
+  --ink-soft:     #5c5866;   /* secondary text */
+  --line:         #eae2d6;   /* hairline borders */
+
+  --accent:       #ff5a36;   /* coral — the loud one */
+  --accent-2:     #6c3bf4;   /* violet — the cool counterweight */
+  --accent-3:     #d6f24b;   /* lime — highlight only, never text */
+
+  --radius:       18px;
+  --radius-sm:    999px;     /* a huge radius = pill shape */
+
+  /* Two-layer shadows read as softer/more natural than one big blur */
+  --shadow:       0 1px 2px rgba(27, 26, 34, .05),
+                  0 12px 28px -12px rgba(27, 26, 34, .18);
+  --shadow-lift:  0 2px 4px rgba(27, 26, 34, .06),
+                  0 22px 44px -16px rgba(108, 59, 244, .28);
+
+  --ease:         cubic-bezier(.22, .61, .36, 1);  /* fast start, gentle stop */
+
+  --nav-h:        68px;      /* referenced by scroll-padding so anchors clear the nav */
+}
+
+
+/* ------------------------------------------------------------
+   2. RESET / BASE
+   Browsers ship their own default margins and box model; these
+   few rules flatten the differences so your CSS is predictable.
+   ------------------------------------------------------------ */
+
+/* border-box = padding and border count *inside* an element's width.
+   Without it, width:100% + padding overflows its container. */
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+/* Strip default margins; we add spacing back deliberately */
+body, h1, h2, h3, p, ul, figure { margin: 0; }
+ul { padding: 0; list-style: none; }
+
+html {
+  /* Native smooth scrolling for anchor links. script.js also does this in JS,
+     but having it here means it works even if the JS fails to load. */
+  scroll-behavior: smooth;
+  /* Stops the sticky nav from covering a section heading when you jump to it */
+  scroll-padding-top: calc(var(--nav-h) + 16px);
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-size: 17px;
+  line-height: 1.65;
+  color: var(--ink);
+  background-color: var(--paper);
+
+  /* Two very soft radial washes behind everything — keeps a light page
+     from feeling flat. fixed = they don't scroll away. */
+  background-image:
+    radial-gradient(60rem 40rem at 85% -10%, rgba(108, 59, 244, .10), transparent 60%),
+    radial-gradient(50rem 35rem at -10% 15%, rgba(255, 90, 54, .10), transparent 60%);
+  background-attachment: fixed;
+
+  -webkit-font-smoothing: antialiased;  /* thinner, cleaner text on macOS */
+}
+
+h1, h2, h3 {
+  font-family: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+  line-height: 1.1;
+  letter-spacing: -.02em;   /* big text needs tightening; small text doesn't */
+  font-weight: 700;
+}
+
+a { color: inherit; text-decoration: none; }
+
+code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: .88em;
+  background: rgba(108, 59, 244, .09);
+  color: var(--accent-2);
+  padding: .1em .4em;
+  border-radius: 6px;
+}
+
+/* Accessibility: a visible focus ring for keyboard users.
+   :focus-visible fires on Tab but not on mouse click, so it doesn't
+   put outlines on everything a mouse user touches. */
+:focus-visible {
+  outline: 3px solid var(--accent-2);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+
+/* ------------------------------------------------------------
+   3. LAYOUT HELPERS
+   .container centres content and caps its width; .section owns
+   the generous vertical whitespace.
+   ------------------------------------------------------------ */
+.container {
+  width: 100%;
+  max-width: 1080px;
+  margin-inline: auto;        /* auto left+right margins = horizontal centring */
+  padding-inline: 24px;       /* gutter so text never touches the screen edge */
+}
+.container--narrow { max-width: 720px; }
+
+.section {
+  /* clamp(min, preferred, max): padding grows with the viewport but stays
+     within sane bounds. 8vw of a phone is small, of a desktop is large. */
+  padding-block: clamp(72px, 9vw, 130px);
+  scroll-margin-top: var(--nav-h);   /* same idea as scroll-padding, per-section */
+}
+
+.section--about {
+  padding-top: clamp(90px, 12vw, 160px);
+}
+
+
+/* ------------------------------------------------------------
+   4. STICKY NAV
+   position: sticky = behaves like static until it hits `top: 0`,
+   then behaves like fixed. z-index keeps it above page content.
+   ------------------------------------------------------------ */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+
+  /* Frosted glass: semi-transparent background + blur what's behind it */
+  background: rgba(255, 250, 243, .78);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid transparent;
+  transition: border-color .25s var(--ease), box-shadow .25s var(--ease);
+}
+
+/* script.js adds .is-scrolled once you've scrolled past ~10px, so the nav
+   only grows its border/shadow when it's actually floating over content */
+.site-header.is-scrolled {
+  border-bottom-color: var(--line);
+  box-shadow: 0 6px 24px -18px rgba(27, 26, 34, .5);
+}
+
+.nav {
+  height: var(--nav-h);
+  max-width: 1080px;
+  margin-inline: auto;
+  padding-inline: 24px;
+  display: flex;                    /* flex row: brand left, links right */
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.nav__brand {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 1.25rem;
+  letter-spacing: -.03em;
+}
+.nav__dot { color: var(--accent); }
+
+.nav__list {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.nav__link {
+  position: relative;               /* positioning context for the ::after underline */
+  display: inline-block;
+  padding: 8px 12px;
+  font-size: .95rem;
+  font-weight: 500;
+  color: var(--ink-soft);
+  border-radius: var(--radius-sm);
+  transition: color .2s var(--ease), background-color .2s var(--ease);
+}
+.nav__link:hover { color: var(--ink); background: rgba(108, 59, 244, .08); }
+
+/* The little underline. It's a pseudo-element scaled to 0 width, then
+   scaled up on hover — animating transform is much cheaper for the browser
+   than animating `width`. transform-origin controls which side it grows from. */
+.nav__link::after {
+  content: "";
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 4px;
+  height: 2px;
+  background: var(--accent);
+  border-radius: 2px;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform .28s var(--ease);
+}
+.nav__link:hover::after,
+.nav__link.is-active::after { transform: scaleX(1); }
+
+/* .is-active is added by script.js for whichever section is on screen */
+.nav__link.is-active { color: var(--ink); }
+
+
+/* ------------------------------------------------------------
+   5. REUSABLE BITS: eyebrow, titles, buttons, tags
+   ------------------------------------------------------------ */
+
+/* Small uppercase label above a heading — adds rhythm and hierarchy */
+.eyebrow {
+  font-size: .78rem;
+  font-weight: 600;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 14px;
+}
+
+.section__title {
+  font-size: clamp(2rem, 4.4vw, 3rem);
+  margin-bottom: 14px;
+}
+
+.section__lede {
+  max-width: 58ch;              /* ch = width of a "0". ~60ch is the comfortable reading limit */
+  color: var(--ink-soft);
+  margin-bottom: 40px;
+}
+
+/* --- Buttons --- */
+.btn-row {
+  display: flex;
+  flex-wrap: wrap;              /* buttons stack instead of overflowing on narrow screens */
+  gap: 14px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 26px;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  font-size: .97rem;
+  border: 2px solid transparent;
+  cursor: pointer;
+  /* Listing properties explicitly (instead of `all`) avoids surprise animations */
+  transition: transform .2s var(--ease), box-shadow .2s var(--ease),
+              background-color .2s var(--ease), color .2s var(--ease),
+              border-color .2s var(--ease);
+}
+
+.btn--primary {
+  background: var(--ink);
+  color: var(--paper);
+}
+.btn--primary:hover {
+  background: var(--accent);
+  transform: translateY(-2px);   /* the classic "lift" hover */
+  box-shadow: 0 14px 28px -14px rgba(255, 90, 54, .85);
+}
+
+.btn--ghost {
+  background: transparent;
+  color: var(--ink);
+  border-color: var(--ink);
+}
+.btn--ghost:hover {
+  border-color: var(--accent-2);
+  color: var(--accent-2);
+  transform: translateY(-2px);
+  box-shadow: 0 14px 28px -16px rgba(108, 59, 244, .7);
+}
+
+.btn:active { transform: translateY(0); }   /* press-down feedback */
+
+/* --- Tag pills --- */
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 34px;
+}
+.tags--sm { margin-bottom: 18px; }
+
+.tag {
+  font-size: .8rem;
+  font-weight: 500;
+  padding: 5px 13px;
+  border-radius: var(--radius-sm);
+  background: var(--paper-2);
+  border: 1px solid var(--line);
+  color: var(--ink-soft);
+}
+
+
+/* ------------------------------------------------------------
+   6. SECTION: ABOUT
+   ------------------------------------------------------------ */
+.hero__title {
+  font-size: clamp(2.5rem, 7vw, 4.4rem);
+  margin-bottom: 22px;
+}
+
+/* Gradient text trick: paint a gradient on the element, clip it to the
+   glyph shapes, then make the text itself transparent so the gradient
+   shows through. -webkit- prefixes are still required. */
+.hero__accent {
+  background: linear-gradient(100deg, var(--accent) 0%, var(--accent-2) 70%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.hero__bio {
+  max-width: 60ch;
+  font-size: 1.1rem;
+  color: var(--ink-soft);
+  margin-bottom: 28px;
+}
+
+
+/* ------------------------------------------------------------
+   7. SECTION: PROJECTS (CSS Grid)
+   ------------------------------------------------------------ */
+.grid {
+  display: grid;
+  /*
+    repeat(auto-fit, minmax(270px, 1fr)) is the whole responsive story:
+      minmax(270px, 1fr) → every column is at least 270px, otherwise shares
+                           the leftover space equally
+      auto-fit           → fit as many such columns as will fit, then stretch
+    Result: 3 columns on a laptop, 2 on a tablet, 1 on a phone — no media query.
+  */
+  grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+  gap: 26px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;        /* thumb on top, body below */
+  background: var(--paper-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;              /* clips the thumbnail to the rounded corners */
+  box-shadow: var(--shadow);
+  transition: transform .3s var(--ease), box-shadow .3s var(--ease),
+              border-color .3s var(--ease);
+}
+.card:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-lift);
+  border-color: rgba(108, 59, 244, .35);
+}
+
+/* Placeholder thumbnails. aspect-ratio reserves the right height without
+   hardcoding pixels, so the card never jumps as things load. */
+.card__thumb {
+  aspect-ratio: 16 / 10;
+  background-size: 200% 200%;    /* oversized so the gradient has room to drift */
+  transition: background-position .6s var(--ease);
+}
+.card:hover .card__thumb { background-position: 100% 100%; }
+
+/* A different gradient per card keeps the grid from looking like a template */
+.card__thumb--a { background-image: linear-gradient(135deg, #ff5a36, #ff9f1c); }
+.card__thumb--b { background-image: linear-gradient(135deg, #6c3bf4, #b06cff); }
+.card__thumb--c { background-image: linear-gradient(135deg, #12b5a5, #d6f24b); }
+.card__thumb--d { background-image: linear-gradient(135deg, #1b1a22, #6c3bf4); }
+
+.card__body {
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;                       /* fills leftover height so all cards line up */
+}
+
+.card__title { font-size: 1.22rem; margin-bottom: 10px; }
+
+.card__text {
+  font-size: .95rem;
+  color: var(--ink-soft);
+  margin-bottom: 16px;
+}
+
+/* margin-top:auto in a flex column pushes this block to the bottom of the
+   card, so the links align across cards of different text lengths */
+.card__links {
+  margin-top: auto;
+  display: flex;
+  gap: 18px;
+}
+
+.link-arrow {
+  font-size: .9rem;
+  font-weight: 600;
+  color: var(--accent-2);
+  border-bottom: 2px solid transparent;
+  transition: border-color .2s var(--ease), color .2s var(--ease);
+}
+.link-arrow::after { content: " →"; }
+.link-arrow:hover { border-bottom-color: var(--accent-2); }
+
+
+/* ------------------------------------------------------------
+   8. SECTION: RESUME
+   ------------------------------------------------------------ */
+.panel {
+  background: var(--paper-2);
+  border: 1px solid var(--line);
+  border-radius: calc(var(--radius) + 6px);
+  padding: clamp(28px, 5vw, 52px);
+  box-shadow: var(--shadow);
+
+  display: flex;
+  flex-wrap: wrap;               /* stacks on narrow screens without a media query */
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+
+  position: relative;
+  overflow: hidden;
+}
+
+/* Decorative blob in the corner — purely visual, so it's a pseudo-element
+   rather than markup (screen readers never see it). */
+.panel::before {
+  content: "";
+  position: absolute;
+  top: -80px;
+  right: -60px;
+  width: 240px;
+  height: 240px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(214, 242, 75, .55), transparent 70%);
+  pointer-events: none;          /* so it never eats a click meant for a button */
+}
+
+.panel__text { flex: 1 1 340px; }        /* grow, shrink, but prefer ~340px */
+.panel__text .section__lede { margin-bottom: 0; }
+.panel .btn-row { flex: 0 1 auto; }
+
+
+/* ------------------------------------------------------------
+   9. SECTION: LATEST ARTICLE
+   ------------------------------------------------------------ */
+.article-card {
+  display: block;
+  background: var(--paper-2);
+  border: 1px solid var(--line);
+  border-left: 5px solid var(--accent);   /* accent spine down the left edge */
+  border-radius: var(--radius);
+  padding: clamp(24px, 4vw, 40px);
+  box-shadow: var(--shadow);
+  transition: transform .3s var(--ease), box-shadow .3s var(--ease),
+              border-left-color .3s var(--ease);
+}
+.article-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lift);
+  border-left-color: var(--accent-2);
+}
+
+.article-card__meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.badge {
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  padding: 4px 11px;
+  border-radius: var(--radius-sm);
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.article-card__date { font-size: .85rem; color: var(--ink-soft); }
+
+.article-card__title {
+  font-size: clamp(1.3rem, 2.6vw, 1.8rem);
+  margin-bottom: 12px;
+  max-width: 30ch;
+}
+
+.article-card__excerpt {
+  color: var(--ink-soft);
+  max-width: 60ch;
+  margin-bottom: 20px;
+}
+
+.article-card__cta {
+  font-weight: 600;
+  color: var(--accent-2);
+}
+/* Nudge the arrow on hover. The inner span is targeted so only the arrow moves. */
+.article-card__cta span {
+  display: inline-block;
+  transition: transform .25s var(--ease);
+}
+.article-card:hover .article-card__cta span { transform: translateX(6px); }
+
+
+/* ------------------------------------------------------------
+   10. SECTION: CONTACT + FOOTER
+   ------------------------------------------------------------ */
+.email-link {
+  display: inline-block;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(1.4rem, 4vw, 2.2rem);
+  font-weight: 700;
+  letter-spacing: -.02em;
+  margin-bottom: 30px;
+
+  /* Animated underline built from a background image: a 2px-tall gradient bar
+     sized to 0% width, sitting at the bottom, widened to 100% on hover.
+     Cleaner than border-bottom because it can animate smoothly. */
+  background-image: linear-gradient(var(--accent), var(--accent));
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 0% 3px;
+  transition: background-size .35s var(--ease), color .2s var(--ease);
+}
+.email-link:hover {
+  background-size: 100% 3px;
+  color: var(--accent);
+}
+
+.socials {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.social {
+  display: inline-block;
+  padding: 10px 20px;
+  border: 1px solid var(--line);
+  background: var(--paper-2);
+  border-radius: var(--radius-sm);
+  font-weight: 500;
+  font-size: .95rem;
+  transition: transform .2s var(--ease), background-color .2s var(--ease),
+              color .2s var(--ease), border-color .2s var(--ease);
+}
+.social:hover {
+  background: var(--accent-2);
+  border-color: var(--accent-2);
+  color: #fff;
+  transform: translateY(-3px);
+}
+
+.footer {
+  border-top: 1px solid var(--line);
+  padding-block: 32px;
+  font-size: .88rem;
+  color: var(--ink-soft);
+}
+
+
+/* ------------------------------------------------------------
+   11. FADE-IN ON SCROLL
+   The pattern: elements start slightly down and transparent.
+   script.js adds .is-visible when they enter the viewport, and
+   the transition below does the animating.
+
+   The .js guard matters: these rules only apply once script.js has
+   added the `js` class to <html>. Without JS the content just shows
+   normally instead of being permanently invisible.
+   ------------------------------------------------------------ */
+.js .reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity .7s var(--ease), transform .7s var(--ease);
+  /* will-change hints the browser to prep these on the GPU ahead of time */
+  will-change: opacity, transform;
+}
+
+.js .reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+
+/* ------------------------------------------------------------
+   12. RESPONSIVE + MOTION PREFERENCES
+   ------------------------------------------------------------ */
+@media (max-width: 640px) {
+  body { font-size: 16px; }
+
+  .nav { height: auto; padding-block: 10px; flex-direction: column; gap: 4px; }
+  .nav__list { justify-content: center; }
+  .nav__link { padding: 6px 9px; font-size: .88rem; }
+
+  /* The nav is taller when stacked, so anchor offsets need to grow with it */
+  :root { --nav-h: 108px; }
+
+  .btn { width: 100%; }          /* full-width, thumb-friendly buttons */
+}
+
+/*
+  Respect the OS "reduce motion" setting. Some people get motion sickness
+  from parallax and slide-ins; this collapses every animation to near-zero
+  while leaving the layout and final state intact.
+*/
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: .01ms !important;
+    transition-duration: .01ms !important;
+  }
+
+  .js .reveal { opacity: 1; transform: none; }
+}
